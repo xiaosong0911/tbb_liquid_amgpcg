@@ -75,7 +75,6 @@ float liquid_phi(const Vec3f& position) {
 void export_particles(string path, int frame, const std::vector<FLIP_particle>& particles, float radius);
 
 //Main testing code
-int advection_type=0;
 //-------------
 int main(int argc, char **argv)
 {
@@ -83,13 +82,12 @@ int main(int argc, char **argv)
    //g_water.dx = g_sdfSolid.dx;
    //g_sdfSolid.objToSDF("C:/Users/xinxin/Desktop/testScene2.obj",Vec3f(0,0,0), Vec3f(2,0.5,2));
    //g_water.objToSDF("C:/Users/xinxin/Desktop/water2.obj",Vec3f(0,0,0), Vec3f(2,1,1));
-   if(argc!=3){
+   if(argc!=2){
       cerr << "The first parameter should be the folder to write the output liquid meshes into. (eg. c:\\output\\)"<<"advection_method" << endl;
       return 1;
    }
 
    string outpath(argv[1]);
-   sscanf(argv[2],"%d", &advection_type);
    
    printf("Initializing data\n");
    sim.initialize(grid_width, gridX, gridY, gridZ);
@@ -143,7 +141,7 @@ int main(int argc, char **argv)
 		  //ball_vel = Vec3f(0,0.0,0);
 		  sim.set_boundary(boundary_phi);
 		  //sim.set_moving_boundary(moving_phi, ball_vel,false);
-		  sim.advance(0.02, advection_type);
+		  sim.advance(0.02);
 	  }
 	  
       
@@ -156,61 +154,56 @@ int main(int argc, char **argv)
 
 
 void export_particles(string path, int frame, const std::vector<FLIP_particle>& particles_in, float radius) {
+   vector<Vec3f> particles;
+   particles.resize(particles_in.size());
+   tbb::parallel_for(0, (int)particles.size(), 1, [&](int p)
+      {
+         particles[p] = particles_in[p].pos;
+      });
    //Write the output
    
-   //std::stringstream strout;
-   //strout << path << "particles_" << frame << ".txt";
-   //string filepath = strout.str();
-   //
-   //ofstream outfile(filepath.c_str());
-   ////write vertex count and particle radius
-   //outfile << particles.size() << " " << radius << std::endl;
-   ////write vertices
-   //for(unsigned int i = 0; i < particles.size(); ++i)
-   //   outfile << particles[i].pos[0] << " " << particles[i].pos[1] << " " << particles[i].pos[2] << std::endl;
-   //outfile.close();
-
-	FaithfulSurfacing3 g_mesher;
-	vector<Vec3f> particles;
-	particles.resize(particles_in.size());
-	tbb::parallel_for(0,(int)particles.size(),1,[&](int p)
-	{
-		particles[p] = particles_in[p].pos;
-	});
-	
-
-   g_mesher.grid_dx = radius/1.001*2.0/sqrt(3.0);
-   g_mesher.particle_x = particles;
-   g_mesher.inner_radius = 0.95*radius;
-   g_mesher.outer_radius = 1.05*radius;
-
-   g_mesher.shrink_steps = 0;
-   g_mesher.smooth_steps = 0;
-   g_mesher.free_smooth_steps = 4;
-   g_mesher.run_surfacing();
-
-
-   ostringstream strout;
-   strout << path << "liquidmesh_" << frame << ".obj";
-
+   std::stringstream strout;
+   strout << path << "particles_" << frame << ".txt";
    string filepath = strout.str();
-
+   
    ofstream outfile(filepath.c_str());
-
+   //write vertex count and particle radius
+   outfile << particles.size() << " " << radius << std::endl;
    //write vertices
-   for(unsigned int i = 0; i < g_mesher.x.size(); ++i)
-	   outfile<<"v"<<" "<< g_mesher.x[i].v[0] << " " << g_mesher.x[i].v[1] << " " << g_mesher.x[i].v[2] << std::endl;
-   for(unsigned int i = 0; i < g_mesher.tri.size(); ++i)
-	   outfile<<"f"<<" "<< g_mesher.tri[i].v[0]+ 1<< " " << g_mesher.tri[i].v[1] + 1 << " " << g_mesher.tri[i].v[2]+ 1<< std::endl;
+   for(unsigned int i = 0; i < particles.size(); ++i)
+      outfile << particles[i][0] << " " << particles[i][1] << " " << particles[i][2] << std::endl;
    outfile.close();
+
+   //FaithfulSurfacing3 g_mesher;
+	
+   //g_mesher.grid_dx = radius/1.001*2.0/sqrt(3.0);
+   //g_mesher.particle_x = particles;
+   //g_mesher.inner_radius = 0.95*radius;
+   //g_mesher.outer_radius = 1.05*radius;
+
+   //g_mesher.shrink_steps = 0;
+   //g_mesher.smooth_steps = 0;
+   //g_mesher.free_smooth_steps = 4;
+   //g_mesher.run_surfacing();
+
+
+   //ostringstream strout;
+   //strout << path << "liquidmesh_" << frame << ".obj";
+
+   //string filepath = strout.str();
+
+   //ofstream outfile(filepath.c_str());
+
+   ////write vertices
+   //for(unsigned int i = 0; i < g_mesher.x.size(); ++i)
+	  // outfile<<"v"<<" "<< g_mesher.x[i].v[0] << " " << g_mesher.x[i].v[1] << " " << g_mesher.x[i].v[2] << std::endl;
+   //for(unsigned int i = 0; i < g_mesher.tri.size(); ++i)
+	  // outfile<<"f"<<" "<< g_mesher.tri[i].v[0]+ 1<< " " << g_mesher.tri[i].v[1] + 1 << " " << g_mesher.tri[i].v[2]+ 1<< std::endl;
+   //outfile.close();
 
 
    particles.resize(0);
    particles.shrink_to_fit();
-
-   
-
-
 
 }
 

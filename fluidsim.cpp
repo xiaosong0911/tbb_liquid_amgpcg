@@ -104,7 +104,7 @@ void FluidSim::emitFluids(float dt)
 	printf("num %d particles\n",particles.size());
 }
 //The main fluid simulation step
-void FluidSim::advance(float dt, int adv_type) {
+void FluidSim::advance(float dt) {
    float t = 0;
 
    while(t < dt) {

@@ -158,8 +158,8 @@ void ParticleRenderer::_initGL()
 {
     m_program = _compileProgram(vertexShader, spherePixelShader);
 
-#if !defined(__APPLE__) && !defined(MACOSX)
-    glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
-    glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
-#endif
+//#if !defined(__APPLE__) && !defined(MACOSX)
+//    glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
+//    glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
+//#endif
 }

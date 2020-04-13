@@ -68,7 +68,7 @@ public:
    void add_particle(const Vec3f& pos);
    void set_forceStr(float str){_external_str = str;}
 
-   void advance(float dt, int adv_type);
+   void advance(float dt);
 
    //Grid dimensions
    int ni,nj,nk;
